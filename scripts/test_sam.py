@@ -33,14 +33,14 @@ elif model == "sam2":
     sam = build_sam2(model_cfg_path, checkpoint_path, device ='cuda', apply_postprocessing=True).half()
     mask_generator = SAM2AutomaticMaskGenerator(sam,  points_per_side=64, pred_iou_thresh=0.76, stability_score_thresh=0.93)
 
-IMAGES_PATH = os.path.join(HOME, "images", "nuevas")
+IMAGES_PATH = os.path.join(HOME, "images")
 for img in Path(IMAGES_PATH).iterdir():
     IMAGE_PATH = os.path.join(IMAGES_PATH, img)
     print(IMAGE_PATH)
 
     print("Leer imagen")
     image = cv2.imread(IMAGE_PATH)
-    #image = cv2.resize(image, (1560,1560))
+    image = cv2.resize(image, (780,780))
     
     print("Generar mascaras")
     start_time = time.time()
@@ -52,12 +52,12 @@ for img in Path(IMAGES_PATH).iterdir():
 
     areas = sorted([result["area"] for result in sam_result])
     print("areas", areas)
-    #filtered_res = [result for result in sam_result if 1000 < result["area"] < 1500]
+    filtered_res = [result for result in sam_result if 100 < result["area"] < 950]
 
     mask_annotator = sv.MaskAnnotator(opacity=1, color_lookup=sv.ColorLookup.INDEX)
 
     print("Mapear detecciones")
-    detections = sv.Detections.from_sam(sam_result=sam_result)
+    detections = sv.Detections.from_sam(sam_result=filtered_res)
 
     print("Anotar mascaras")
     annotated_image = mask_annotator.annotate(scene=image.copy(), detections=detections)
